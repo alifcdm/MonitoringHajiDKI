@@ -196,7 +196,7 @@ function renderChart(rows) {
                 x: { grid: { display: false } },
                 y: {
                     beginAtZero: true,
-                    ticks: { callback: value => `${value}%` }
+                    ticks: { callback: value => `${value}` }
                 }
             }
         }
