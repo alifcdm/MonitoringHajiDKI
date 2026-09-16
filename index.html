@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Monitoring DKI Jakarta</title>
+    
+    <!-- UI/UX Framework: Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Chart Library: Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- CSV Parser: PapaParse -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+</head>
+<body class="bg-slate-50 font-sans text-slate-800 antialiased p-6">
+
+    <div class="max-w-7xl mx-auto">
+        <!-- Header -->
+        <header class="mb-8">
+            <h1 class="text-3xl font-bold text-slate-900">Monitoring Data Jemaah Haji DKI Jakarta</h1>
+            <p class="text-slate-500 mt-1">Update SVB, Passport, dan BPJS</p>
+        </header>
+
+        <!-- Dashboard Grid Layout -->
+        <div class="grid grid-cols-1 lg:grid-cols-1 gap-6 mb-6">
+            <!-- Card Chart (Dibuat full width karena Bar Chart butuh ruang lebar) -->
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
+                <h2 class="text-xl font-semibold mb-4 text-slate-700">Perbandingan Data per Kota</h2>
+                <div class="relative h-96 w-full">
+                    <canvas id="dailyChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 gap-6">
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
+                <h2 class="text-xl font-semibold mb-4 text-slate-700">Monitoring Data</h2>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="border-b-2 border-slate-200 text-sm uppercase tracking-wider text-slate-500">
+                                <th class="p-3">Tanggal Input</th>
+                                <th class="p-3">Kota</th>
+                                <th class="p-3 text-right">SVB</th>
+                                <th class="p-3 text-right">Passport</th>
+                                <th class="p-3 text-right">BPJS</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-sm text-slate-600 divide-y divide-slate-100" id="monitoringTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
+                <h2 class="text-xl font-semibold mb-4 text-slate-700">Rincian Data Aktual</h2>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="border-b-2 border-slate-200 text-sm uppercase tracking-wider text-slate-500">
+                                <th class="p-3">Kota</th>
+                                <th class="p-3 text-right">SVB</th>
+                                <th class="p-3 text-right">Passport</th>
+                                <th class="p-3 text-right">BPJS</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-sm text-slate-600 divide-y divide-slate-100" id="submissionTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
+                <h2 class="text-xl font-semibold mb-4 text-slate-700">Persentase Data dari Kuota</h2>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="border-b-2 border-slate-200 text-sm uppercase tracking-wider text-slate-500">
+                                <th class="p-3">Kota</th>
+                                <th class="p-3 text-right">Kuota</th>
+                                <th class="p-3 text-right">SVB</th>
+                                <th class="p-3 text-right">Passport</th>
+                                <th class="p-3 text-right">BPJS</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-sm text-slate-600 divide-y divide-slate-100" id="percentageTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Logic Script -->
+    <script src="app.js"></script>
+</body>
+</html>
