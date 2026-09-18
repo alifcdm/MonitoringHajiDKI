@@ -28,6 +28,15 @@ function formatNumber(value) {
     return new Intl.NumberFormat('id-ID').format(value);
 }
 
+function formatPercent(value) {
+    return `${(Number.isFinite(value) ? value : 0).toFixed(1)}%`;
+}
+
+function calculatePercentage(value, total) {
+    if (!total || total === 0) return 0;
+    return (value / total) * 100;
+}
+
 function findQuotaRows(rows, knownCities) {
     const quotaRows = [];
 
@@ -92,16 +101,18 @@ function getMonitoringRows(rows) {
 function createPercentageRows(submissionRows, quotaRows) {
     const submissions = new Map(submissionRows.map(row => [row.kota, row]));
 
-    return quotaRows.map(({ kota, kuota }) => {
-        const submission = submissions.get(kota) || { svb: 0, passport: 0, bpjs: 0 };
-        return {
-            kota,
-            kuota,
-            svb: submission.svb,
-            passport: submission.passport,
-            bpjs: submission.bpjs
-        };
-    });
+    return quotaRows
+        .map(({ kota, kuota }) => {
+            const submission = submissions.get(kota) || { svb: 0, passport: 0, bpjs: 0 };
+            return {
+                kota,
+                kuota,
+                svb: calculatePercentage(submission.svb, kuota),
+                passport: calculatePercentage(submission.passport, kuota),
+                bpjs: calculatePercentage(submission.bpjs, kuota)
+            };
+        })
+        .sort((a, b) => a.kota.localeCompare(b.kota, 'id'));
 }
 
 function appendCell(row, value, className = 'p-3') {
@@ -151,9 +162,9 @@ function renderPercentageTable(rows) {
         tr.className = 'hover:bg-slate-50 transition-colors duration-200';
         appendCell(tr, row.kota, 'p-3 font-semibold text-slate-800');
         appendCell(tr, formatNumber(row.kuota), 'p-3 text-right font-medium');
-        appendCell(tr, formatNumber(row.svb), 'p-3 text-right font-medium');
-        appendCell(tr, formatNumber(row.passport), 'p-3 text-right font-medium');
-        appendCell(tr, formatNumber(row.bpjs), 'p-3 text-right font-medium');
+        appendCell(tr, formatPercent(row.svb), 'p-3 text-right font-medium');
+        appendCell(tr, formatPercent(row.passport), 'p-3 text-right font-medium');
+        appendCell(tr, formatPercent(row.bpjs), 'p-3 text-right font-medium');
         tbody.appendChild(tr);
     });
 }
@@ -206,8 +217,10 @@ function renderChart(rows) {
 async function initDashboard() {
     try {
         const rows = await fetchSheetData();
-        const monitoringRows = getMonitoringRows(rows);
-        const submissionRows = aggregateSubmissionRows(rows);
+        const monitoringRows = getMonitoringRows(rows)
+            .sort((a, b) => Date.parse(b.tanggal) - Date.parse(a.tanggal));
+        const submissionRows = aggregateSubmissionRows(rows)
+            .sort((a, b) => a.kota.localeCompare(b.kota, 'id'));
         const quotaRows = findQuotaRows(rows, new Set(submissionRows.map(row => row.kota)));
         const percentageRows = createPercentageRows(submissionRows, quotaRows);
 
@@ -218,7 +231,7 @@ async function initDashboard() {
         renderMonitoringTable(monitoringRows);
         renderSubmissionTable(submissionRows);
         renderPercentageTable(percentageRows);
-        renderChart(percentageRows);
+        renderChart(submissionRows);
     } catch (error) {
         console.error('Gagal memuat dashboard:', error);
         document.querySelectorAll('tbody').forEach(tbody => {
