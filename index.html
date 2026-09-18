@@ -37,9 +37,9 @@
         <div class="grid grid-cols-1 gap-6">
             <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
                 <h2 class="text-xl font-semibold mb-4 text-slate-700">Monitoring Data</h2>
-                <div class="overflow-x-auto">
+                <div class="overflow-auto max-h-[360px] border border-slate-200 rounded-lg">
                     <table class="w-full text-left border-collapse">
-                        <thead>
+                        <thead class="sticky top-0 bg-white z-10">
                             <tr class="border-b-2 border-slate-200 text-sm uppercase tracking-wider text-slate-500">
                                 <th class="p-3">Tanggal Input</th>
                                 <th class="p-3">Kota</th>
@@ -76,9 +76,9 @@
                             <tr class="border-b-2 border-slate-200 text-sm uppercase tracking-wider text-slate-500">
                                 <th class="p-3">Kota</th>
                                 <th class="p-3 text-right">Kuota</th>
-                                <th class="p-3 text-right">SVB</th>
-                                <th class="p-3 text-right">Passport</th>
-                                <th class="p-3 text-right">BPJS</th>
+                                <th class="p-3 text-right">SVB (%)</th>
+                                <th class="p-3 text-right">Passport (%)</th>
+                                <th class="p-3 text-right">BPJS (%)</th>
                             </tr>
                         </thead>
                         <tbody class="text-sm text-slate-600 divide-y divide-slate-100" id="percentageTableBody"></tbody>
