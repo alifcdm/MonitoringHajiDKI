@@ -1,7 +1,9 @@
 // Konfigurasi URL CSV dari Google Sheets
 const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/1ZilRO7mP_FYiSOWK1-59h7g3xT9kZeg3p-mMtWUazes/export?format=csv';
+const VISITOR_SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/1Pb9PX6o4Xg2oniZQ_KidfibG5dpvQuoSHOMuhSUXsxc/export?format=csv';
 
 let monitoringChart = null;
+let visitorChart = null;
 
 async function fetchSheetData() {
     return new Promise((resolve, reject) => {
@@ -12,6 +14,119 @@ async function fetchSheetData() {
             error: error => reject(error)
         });
     });
+}
+
+async function fetchVisitorData() {
+    return new Promise((resolve, reject) => {
+        Papa.parse(VISITOR_SHEET_CSV_URL, {
+            download: true,
+            header: true,
+            skipEmptyLines: true,
+            complete: results => resolve(results.data),
+            error: error => reject(error)
+        });
+    });
+}
+
+function getVisitorCountsByDay(rows, today = new Date()) {
+    const dates = Array.from({ length: 7 }, (_, index) => {
+        const date = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+        date.setDate(date.getDate() - (6 - index));
+        return date;
+    });
+    const counts = new Map(dates.map(date => [date.toDateString(), 0]));
+
+    rows.forEach(row => {
+        const timestamp = Date.parse(row.Timestamp);
+        if (!Number.isFinite(timestamp)) return;
+        const date = new Date(timestamp);
+        const key = new Date(date.getFullYear(), date.getMonth(), date.getDate()).toDateString();
+        if (counts.has(key)) counts.set(key, counts.get(key) + 1);
+    });
+
+    return dates.map(date => ({
+        date,
+        count: counts.get(date.toDateString())
+    }));
+}
+
+function renderVisitorChart(dailyCounts) {
+    const canvas = document.getElementById('visitorChart');
+    if (visitorChart) visitorChart.destroy();
+
+    const valueLabels = {
+        id: 'visitorValueLabels',
+        afterDatasetsDraw(chart) {
+            const { ctx, chartArea } = chart;
+            const dataset = chart.data.datasets[0];
+            const bars = chart.getDatasetMeta(0).data;
+
+            ctx.save();
+            ctx.fillStyle = '#f0dca6';
+            ctx.font = '600 12px sans-serif';
+            ctx.textAlign = 'center';
+            bars.forEach((bar, index) => {
+                ctx.fillText(formatNumber(dataset.data[index]), bar.x, Math.max(chartArea.top + 14, bar.y - 8));
+            });
+            ctx.restore();
+        }
+    };
+
+    visitorChart = new Chart(canvas.getContext('2d'), {
+        type: 'bar',
+        plugins: [valueLabels],
+        data: {
+            labels: dailyCounts.map(({ date }) => new Intl.DateTimeFormat('id-ID', {
+                weekday: 'short', day: 'numeric', month: 'short'
+            }).format(date)),
+            datasets: [{
+                label: 'Jumlah pengunjung',
+                data: dailyCounts.map(({ count }) => count),
+                backgroundColor: '#c8a858',
+                borderRadius: 4,
+                maxBarThickness: 48
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                x: { grid: { display: false }, ticks: { color: '#b9ad8f' } },
+                y: {
+                    beginAtZero: true,
+                    grace: '12%',
+                    grid: { color: 'rgba(212, 180, 99, 0.14)' },
+                    ticks: { color: '#b9ad8f', precision: 0 }
+                }
+            }
+        }
+    });
+}
+
+async function initVisitorDashboard() {
+    const countElement = document.getElementById('visitorCount');
+    const dateElement = document.getElementById('visitorCountDate');
+    const weekCountElement = document.getElementById('visitorWeekCount');
+
+    try {
+        const rows = await fetchVisitorData();
+        const dailyCounts = getVisitorCountsByDay(rows);
+        const todayCount = dailyCounts[dailyCounts.length - 1].count;
+        const weekCount = dailyCounts.reduce((total, day) => total + day.count, 0);
+
+        countElement.textContent = formatNumber(todayCount);
+        weekCountElement.textContent = formatNumber(weekCount);
+        dateElement.textContent = new Intl.DateTimeFormat('id-ID', {
+            dateStyle: 'full'
+        }).format(new Date());
+        renderVisitorChart(dailyCounts);
+    } catch (error) {
+        console.error('Gagal memuat data pengunjung:', error);
+        countElement.textContent = '—';
+        weekCountElement.textContent = '—';
+        dateElement.textContent = 'Data pengunjung gagal dimuat.';
+    }
 }
 
 function parseNumber(value) {
@@ -128,8 +243,8 @@ function renderSubmissionTable(rows) {
 
     rows.forEach(row => {
         const tr = document.createElement('tr');
-        tr.className = 'hover:bg-slate-50 transition-colors duration-200';
-        appendCell(tr, row.kota, 'p-3 font-semibold text-slate-800');
+        tr.className = 'hover:bg-[#29251b] transition-colors duration-200';
+        appendCell(tr, row.kota, 'p-3 font-semibold text-[#e3c66d]');
         appendCell(tr, formatNumber(row.svb), 'p-3 text-right font-medium');
         appendCell(tr, formatNumber(row.passport), 'p-3 text-right font-medium');
         appendCell(tr, formatNumber(row.bpjs), 'p-3 text-right font-medium');
@@ -143,9 +258,9 @@ function renderMonitoringTable(rows) {
 
     rows.forEach(row => {
         const tr = document.createElement('tr');
-        tr.className = 'hover:bg-slate-50 transition-colors duration-200';
+        tr.className = 'hover:bg-[#29251b] transition-colors duration-200';
         appendCell(tr, row.tanggal);
-        appendCell(tr, row.kota, 'p-3 font-semibold text-slate-800');
+        appendCell(tr, row.kota, 'p-3 font-semibold text-[#e3c66d]');
         appendCell(tr, formatNumber(row.svb), 'p-3 text-right font-medium');
         appendCell(tr, formatNumber(row.passport), 'p-3 text-right font-medium');
         appendCell(tr, formatNumber(row.bpjs), 'p-3 text-right font-medium');
@@ -159,8 +274,8 @@ function renderPercentageTable(rows) {
 
     rows.forEach(row => {
         const tr = document.createElement('tr');
-        tr.className = 'hover:bg-slate-50 transition-colors duration-200';
-        appendCell(tr, row.kota, 'p-3 font-semibold text-slate-800');
+        tr.className = 'hover:bg-[#29251b] transition-colors duration-200';
+        appendCell(tr, row.kota, 'p-3 font-semibold text-[#e3c66d] color-[#e3c66d]');
         appendCell(tr, formatNumber(row.kuota), 'p-3 text-right font-medium');
         appendCell(tr, formatPercent(row.svb), 'p-3 text-right font-medium');
         appendCell(tr, formatPercent(row.passport), 'p-3 text-right font-medium');
@@ -181,19 +296,19 @@ function renderChart(rows) {
                 {
                     label: 'SVB',
                     data: rows.map(row => row.svb),
-                    backgroundColor: '#3b82f6',
+                    backgroundColor: '#c8a858',
                     borderRadius: 4
                 },
                 {
                     label: 'Passport',
                     data: rows.map(row => row.passport),
-                    backgroundColor: '#10b981',
+                    backgroundColor: '#efe4c9',
                     borderRadius: 4
                 },
                 {
                     label: 'BPJS',
                     data: rows.map(row => row.bpjs),
-                    backgroundColor: '#f59e0b',
+                    backgroundColor: '#a95e49',
                     borderRadius: 4
                 }
             ]
@@ -202,12 +317,13 @@ function renderChart(rows) {
             responsive: true,
             maintainAspectRatio: false,
             interaction: { mode: 'index', intersect: false },
-            plugins: { legend: { position: 'top' } },
+            plugins: { legend: { position: 'top', labels: { color: '#ded6c4' } } },
             scales: {
-                x: { grid: { display: false } },
+                x: { grid: { display: false }, ticks: { color: '#b9ad8f' } },
                 y: {
                     beginAtZero: true,
-                    ticks: { callback: value => `${value}` }
+                    grid: { color: 'rgba(212, 180, 99, 0.14)' },
+                    ticks: { color: '#b9ad8f', callback: value => `${value}` }
                 }
             }
         }
@@ -240,5 +356,11 @@ async function initDashboard() {
     }
 }
 
-document.addEventListener('DOMContentLoaded', initDashboard);
-setInterval(initDashboard, 300000);
+document.addEventListener('DOMContentLoaded', () => {
+    initDashboard();
+    initVisitorDashboard();
+});
+setInterval(() => {
+    initDashboard();
+    initVisitorDashboard();
+}, 30000);
