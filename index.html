@@ -54,6 +54,20 @@
                     <canvas id="visitorChart" aria-label="Jumlah pengunjung per hari selama tujuh hari terakhir"></canvas>
                 </div>
             </div>
+            <div class="bg-[#1b1915] p-6 rounded-xl shadow-sm border border-[#4d422d]">
+                <div class="mb-2 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <h2 class="text-xl font-semibold text-[#e3c66d]">Grafik Jenis Keperluan</h2>
+                    <div class="inline-flex self-start rounded-lg border border-[#665431] bg-[#100f0d] p-1" role="group" aria-label="Filter rentang waktu grafik jenis keperluan">
+                        <button id="needRangeToday" type="button" aria-pressed="false" class="rounded-md border border-transparent px-4 py-2 text-sm font-semibold text-[#cabb95] transition-colors hover:text-[#f0d58b] aria-pressed:border-[#b99a50] aria-pressed:bg-[#806a3a] aria-pressed:text-[#fff4d2]">Hari ini</button>
+                        <button id="needRangeSevenDays" type="button" aria-pressed="true" class="rounded-md border border-transparent px-4 py-2 text-sm font-semibold text-[#cabb95] transition-colors hover:text-[#f0d58b] aria-pressed:border-[#b99a50] aria-pressed:bg-[#806a3a] aria-pressed:text-[#fff4d2]">7 hari</button>
+                    </div>
+                </div>
+                <p id="needChartRangeCaption" class="mb-4 text-sm text-[#b9ad8f]">Data 7 hari terakhir; variasi penulisan dikelompokkan berdasarkan tema keperluan.</p>
+                <div class="relative h-80 w-full">
+                    <canvas id="needChart" aria-label="Jumlah pengunjung berdasarkan jenis keperluan"></canvas>
+                    <p id="needChartEmpty" class="hidden pointer-events-none absolute inset-0 flex items-center justify-center text-sm text-[#b9ad8f]">Belum ada data pada rentang ini.</p>
+                </div>
+            </div>
         </section>
 
         <!-- Dashboard Grid Layout -->
