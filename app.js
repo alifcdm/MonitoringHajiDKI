@@ -1,9 +1,11 @@
 // Konfigurasi URL CSV dari Google Sheets
 const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/1ZilRO7mP_FYiSOWK1-59h7g3xT9kZeg3p-mMtWUazes/export?format=csv';
 const VISITOR_SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/1Pb9PX6o4Xg2oniZQ_KidfibG5dpvQuoSHOMuhSUXsxc/export?format=csv';
+const ADMIN_PASSWORD = 'ganti-password-admin';
 
 let monitoringChart = null;
 let visitorChart = null;
+let isAdminAuthenticated = false;
 
 async function fetchSheetData() {
     return new Promise((resolve, reject) => {
@@ -356,11 +358,35 @@ async function initDashboard() {
     }
 }
 
+function initAdminAccess() {
+    const loginForm = document.getElementById('adminLoginForm');
+    const passwordInput = document.getElementById('adminPassword');
+    const loginPanel = document.getElementById('adminLoginPanel');
+    const loginError = document.getElementById('adminLoginError');
+    const monitoringSection = document.getElementById('adminMonitoringSection');
+
+    loginForm.addEventListener('submit', event => {
+        event.preventDefault();
+
+        if (passwordInput.value !== "Kanwil@2026") {
+            loginError.hidden = false;
+            passwordInput.select();
+            return;
+        }
+
+        isAdminAuthenticated = true;
+        loginError.hidden = true;
+        loginPanel.hidden = true;
+        monitoringSection.hidden = false;
+        initDashboard();
+    });
+}
+
 document.addEventListener('DOMContentLoaded', () => {
-    initDashboard();
+    initAdminAccess();
     initVisitorDashboard();
 });
 setInterval(() => {
-    initDashboard();
+    if (isAdminAuthenticated) initDashboard();
     initVisitorDashboard();
 }, 30000);
