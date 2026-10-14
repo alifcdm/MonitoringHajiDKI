@@ -58,6 +58,20 @@
 
         <!-- Dashboard Grid Layout -->
         <!-- Header -->
+        <section id="adminLoginPanel" class="mb-6 rounded-xl border border-[#806a3a] bg-[#1b1915] p-6 shadow-sm">
+            <div class="mx-auto max-w-xl">
+                <h2 class="text-xl font-semibold text-[#e3c66d]">Akses Admin</h2>
+                <p class="mt-2 text-sm text-[#cabb95]">Masukkan kata sandi untuk membuka monitoring kantor wilayah.</p>
+                <form id="adminLoginForm" class="mt-4 flex flex-col gap-3 sm:flex-row">
+                    <label class="sr-only" for="adminPassword">Kata sandi admin</label>
+                    <input id="adminPassword" type="password" autocomplete="current-password" required placeholder="Kata sandi admin" class="min-w-0 flex-1 rounded-md border border-[#665431] bg-[#100f0d] px-4 py-3 text-[#f5ead0] placeholder:text-[#8f846b] focus:border-[#e3c66d] focus:outline-none focus:ring-1 focus:ring-[#e3c66d]">
+                    <button type="submit" class="rounded-md border border-[#b99a50] bg-[#806a3a] px-6 py-3 font-semibold text-[#fff7df] transition-colors hover:bg-[#967b42]">Masuk</button>
+                </form>
+                <p id="adminLoginError" class="mt-3 text-sm text-[#e28c74]" role="alert" hidden>Kata sandi salah. Silakan coba lagi.</p>
+            </div>
+        </section>
+
+        <section id="adminMonitoringSection" aria-label="Monitoring pengunjung kantor wilayah" hidden>
         <header class="mb-8">
             <h1 class="text-3xl font-bold text-[#e3c66d]">Dashboard Monitoring Data Kantor Wilayah Kementerian Haji dan Umrah DKI Jakarta</h1>
             <p class="text-[#afa58c] mt-1">Update SVB, Passport, dan BPJS</p>
@@ -124,6 +138,7 @@
                 </div>
             </div>
         </div>
+        </section>
     </div>
 
     <!-- Logic Script -->
