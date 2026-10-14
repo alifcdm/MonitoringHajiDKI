@@ -5,6 +5,9 @@ const ADMIN_PASSWORD = 'ganti-password-admin';
 
 let monitoringChart = null;
 let visitorChart = null;
+let needChart = null;
+let needChartRange = '7-days';
+let visitorRows = null;
 let isAdminAuthenticated = false;
 
 async function fetchSheetData() {
@@ -50,6 +53,114 @@ function getVisitorCountsByDay(rows, today = new Date()) {
         date,
         count: counts.get(date.toDateString())
     }));
+}
+
+function categorizeNeed(value) {
+    const need = String(value || '').trim().toLocaleLowerCase('id-ID');
+    if (!need) return '';
+    if (/pelimpahan|limpahan|peralihan/.test(need)) return 'Pelimpahan porsi';
+    if (/(pindah|pinda)\s*pin|pin.*(pindah|pinda)/.test(need)) return 'Pindah PIN';
+    if (/foto|photo|fhoto|biometr|giometr/.test(need)) return 'Foto & biometrik';
+    if (/spph|daftar|pendaft|mendaftar|haji khusus/.test(need)) return 'Pendaftaran / SPPH';
+    if (/konsult|informasi|info|nanya|menanyakan|mencari/.test(need)) return 'Konsultasi & informasi';
+    if (/ambil|pengambilan|penyerahan|berkas|dokumen|verifikasi|urus|pengurusan|melengkapi|setor/.test(need)) return 'Pengurusan berkas';
+    return 'Keperluan lainnya';
+}
+
+function getNeedTypeCounts(rows, range = needChartRange, today = new Date()) {
+    const counts = new Map();
+    const endDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const startDate = new Date(endDate);
+    if (range === '7-days') startDate.setDate(startDate.getDate() - 6);
+
+    rows.forEach(row => {
+        const timestamp = Date.parse(row.Timestamp);
+        if (!Number.isFinite(timestamp)) return;
+        const timestampDate = new Date(timestamp);
+        const date = new Date(timestampDate.getFullYear(), timestampDate.getMonth(), timestampDate.getDate());
+        if (date < startDate || date > endDate) return;
+
+        const category = categorizeNeed(row.KEPERLUAN);
+        if (category) counts.set(category, (counts.get(category) || 0) + 1);
+    });
+
+    return Array.from(counts, ([label, count]) => ({ label, count }))
+        .sort((a, b) => b.count - a.count);
+}
+
+function renderNeedChart(rows, range = needChartRange) {
+    const canvas = document.getElementById('needChart');
+    const categories = getNeedTypeCounts(rows, range);
+    const rangeCaption = document.getElementById('needChartRangeCaption');
+    const emptyMessage = document.getElementById('needChartEmpty');
+    const rangeLabel = range === 'today' ? 'hari ini' : '7 hari terakhir';
+
+    rangeCaption.textContent = `Data ${rangeLabel}; variasi penulisan dikelompokkan berdasarkan tema keperluan.`;
+    emptyMessage.classList.toggle('hidden', categories.length > 0);
+    if (needChart) needChart.destroy();
+
+    const valueLabels = {
+        id: 'needValueLabels',
+        afterDatasetsDraw(chart) {
+            const { ctx } = chart;
+            const dataset = chart.data.datasets[0];
+            const bars = chart.getDatasetMeta(0).data;
+
+            ctx.save();
+            ctx.fillStyle = '#f0dca6';
+            ctx.font = '600 12px sans-serif';
+            ctx.textAlign = 'left';
+            bars.forEach((bar, index) => {
+                ctx.fillText(formatNumber(dataset.data[index]), bar.x + 8, bar.y + 4);
+            });
+            ctx.restore();
+        }
+    };
+
+    needChart = new Chart(canvas.getContext('2d'), {
+        type: 'bar',
+        plugins: [valueLabels],
+        data: {
+            labels: categories.map(({ label }) => label),
+            datasets: [{
+                label: 'Jumlah pengunjung',
+                data: categories.map(({ count }) => count),
+                backgroundColor: '#c8a858',
+                borderRadius: 4,
+                maxBarThickness: 34
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                x: {
+                    beginAtZero: true,
+                    grace: '12%',
+                    grid: { color: 'rgba(212, 180, 99, 0.14)' },
+                    ticks: { color: '#b9ad8f', precision: 0 }
+                },
+                y: { grid: { display: false }, ticks: { color: '#b9ad8f' } }
+            }
+        }
+    });
+}
+
+function initNeedChartFilter() {
+    const todayButton = document.getElementById('needRangeToday');
+    const sevenDaysButton = document.getElementById('needRangeSevenDays');
+
+    const selectRange = range => {
+        needChartRange = range;
+        todayButton.setAttribute('aria-pressed', String(range === 'today'));
+        sevenDaysButton.setAttribute('aria-pressed', String(range === '7-days'));
+        if (visitorRows !== null) renderNeedChart(visitorRows);
+    };
+
+    todayButton.addEventListener('click', () => selectRange('today'));
+    sevenDaysButton.addEventListener('click', () => selectRange('7-days'));
 }
 
 function renderVisitorChart(dailyCounts) {
@@ -113,6 +224,7 @@ async function initVisitorDashboard() {
 
     try {
         const rows = await fetchVisitorData();
+        visitorRows = rows;
         const dailyCounts = getVisitorCountsByDay(rows);
         const todayCount = dailyCounts[dailyCounts.length - 1].count;
         const weekCount = dailyCounts.reduce((total, day) => total + day.count, 0);
@@ -123,6 +235,7 @@ async function initVisitorDashboard() {
             dateStyle: 'full'
         }).format(new Date());
         renderVisitorChart(dailyCounts);
+        renderNeedChart(rows);
     } catch (error) {
         console.error('Gagal memuat data pengunjung:', error);
         countElement.textContent = '—';
@@ -384,6 +497,7 @@ function initAdminAccess() {
 
 document.addEventListener('DOMContentLoaded', () => {
     initAdminAccess();
+    initNeedChartFilter();
     initVisitorDashboard();
 });
 setInterval(() => {
