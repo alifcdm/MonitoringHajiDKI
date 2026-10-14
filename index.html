@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Monitoring DKI Jakarta</title>
+    <title>Dashboard Kantor Wilayah Kementerian Haji dan Umrah DKI Jakarta</title>
     
     <!-- UI/UX Framework: Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -14,20 +14,58 @@
     <!-- CSV Parser: PapaParse -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
 </head>
-<body class="bg-slate-50 font-sans text-slate-800 antialiased p-6">
+<body class="bg-[#100f0d] font-sans text-[#e7dfcc] antialiased p-6">
 
     <div class="max-w-7xl mx-auto">
         <!-- Header -->
         <header class="mb-8">
-            <h1 class="text-3xl font-bold text-slate-900">Monitoring Data Jemaah Haji DKI Jakarta</h1>
-            <p class="text-slate-500 mt-1">Update SVB, Passport, dan BPJS</p>
+            <h1 class="text-center text-3xl font-bold text-[#e3c66d]">Dashboard Kantor Wilayah Kementerian Haji dan Umrah DKI Jakarta</h1>
         </header>
 
+        <section class="mb-6 space-y-6" aria-label="Statistik pengunjung kantor wilayah">
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <article class="relative overflow-hidden rounded-xl border border-[#806a3a] bg-gradient-to-br from-[#292316] to-[#17150f] p-6 text-[#f5ead0] shadow-sm">
+                    <div class="mb-5 flex items-center justify-between gap-3">
+                        <p class="text-lg font-semibold text-[#e3c66d]">Jumlah Pengunjung</p>
+                        <span class="rounded-full border border-[#806a3a] bg-[#56451f]/60 px-3 py-1 text-xs font-semibold uppercase text-[#efdb9f]">Hari ini</span>
+                    </div>
+                    <div class="flex items-baseline gap-3">
+                        <p id="visitorCount" class="text-6xl font-bold text-[#f0d58b]" aria-live="polite">—</p>
+                        <span class="text-lg text-[#cabb95]">orang</span>
+                    </div>
+                    <p id="visitorCountDate" class="mt-3 text-sm text-[#cabb95]">Memuat data pengunjung...</p>
+                </article>
+
+                <article class="relative overflow-hidden rounded-xl border border-[#806a3a] bg-gradient-to-br from-[#211e17] to-[#151310] p-6 text-[#f5ead0] shadow-sm">
+                    <div class="mb-5 flex items-center justify-between gap-3">
+                        <p class="text-lg font-semibold text-[#e3c66d]">Total Pengunjung</p>
+                        <span class="rounded-full border border-[#806a3a] bg-[#56451f]/60 px-3 py-1 text-xs font-semibold uppercase text-[#efdb9f]">7 hari</span>
+                    </div>
+                    <div class="flex items-baseline gap-3">
+                        <p id="visitorWeekCount" class="text-6xl font-bold text-[#f0d58b]" aria-live="polite">—</p>
+                        <span class="text-lg text-[#cabb95]">orang</span>
+                    </div>
+                    <p class="mt-3 text-sm text-[#cabb95]">Akumulasi pengunjung 7 hari terakhir</p>
+                </article>
+            </div>
+            <div class="bg-[#1b1915] p-6 rounded-xl shadow-sm border border-[#4d422d]">
+                <h2 class="text-xl font-semibold mb-4 text-[#e3c66d]">Grafik Pengunjung Kantor Wilayah Kementerian Haji dan Umrah DKI Jakarta</h2>
+                <div class="relative h-80 w-full">
+                    <canvas id="visitorChart" aria-label="Jumlah pengunjung per hari selama tujuh hari terakhir"></canvas>
+                </div>
+            </div>
+        </section>
+
         <!-- Dashboard Grid Layout -->
+        <!-- Header -->
+        <header class="mb-8">
+            <h1 class="text-3xl font-bold text-[#e3c66d]">Dashboard Monitoring Data Kantor Wilayah Kementerian Haji dan Umrah DKI Jakarta</h1>
+            <p class="text-[#afa58c] mt-1">Update SVB, Passport, dan BPJS</p>
+        </header>
         <div class="grid grid-cols-1 lg:grid-cols-1 gap-6 mb-6">
             <!-- Card Chart (Dibuat full width karena Bar Chart butuh ruang lebar) -->
-            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
-                <h2 class="text-xl font-semibold mb-4 text-slate-700">Perbandingan Data per Kota</h2>
+            <div class="bg-[#1b1915] p-6 rounded-xl shadow-sm border border-[#4d422d]">
+                <h2 class="text-xl font-semibold mb-4 text-[#e3c66d]">Perbandingan Data per Kota</h2>
                 <div class="relative h-96 w-full">
                     <canvas id="dailyChart"></canvas>
                 </div>
@@ -35,12 +73,12 @@
         </div>
 
         <div class="grid grid-cols-1 gap-6">
-            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
-                <h2 class="text-xl font-semibold mb-4 text-slate-700">Monitoring Data</h2>
-                <div class="overflow-auto max-h-[360px] border border-slate-200 rounded-lg">
+            <div class="bg-[#1b1915] p-6 rounded-xl shadow-sm border border-[#4d422d]">
+                <h2 class="text-xl font-semibold mb-4 text-[#e3c66d]">Monitoring Data</h2>
+                <div class="overflow-auto max-h-[360px] border border-[#4d422d] rounded-lg">
                     <table class="w-full text-left border-collapse">
-                        <thead class="sticky top-0 bg-white z-10">
-                            <tr class="border-b-2 border-slate-200 text-sm uppercase tracking-wider text-slate-500">
+                        <thead class="sticky top-0 bg-[#211f19] z-10">
+                            <tr class="border-b-2 border-[#55482b] text-sm uppercase tracking-wider text-[#b9ad8f]">
                                 <th class="p-3">Tanggal Input</th>
                                 <th class="p-3">Kota</th>
                                 <th class="p-3 text-right">SVB</th>
@@ -48,32 +86,32 @@
                                 <th class="p-3 text-right">BPJS</th>
                             </tr>
                         </thead>
-                        <tbody class="text-sm text-slate-600 divide-y divide-slate-100" id="monitoringTableBody"></tbody>
+                        <tbody class="text-sm text-[#ded6c4] divide-y divide-[#393327]" id="monitoringTableBody"></tbody>
                     </table>
                 </div>
             </div>
-            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
-                <h2 class="text-xl font-semibold mb-4 text-slate-700">Rincian Data Aktual</h2>
+            <div class="bg-[#1b1915] p-6 rounded-xl shadow-sm border border-[#4d422d]">
+                <h2 class="text-xl font-semibold mb-4 text-[#e3c66d]">Rincian Data Aktual</h2>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse">
                         <thead>
-                            <tr class="border-b-2 border-slate-200 text-sm uppercase tracking-wider text-slate-500">
+                            <tr class="border-b-2 border-[#55482b] text-sm uppercase tracking-wider text-[#b9ad8f]">
                                 <th class="p-3">Kota</th>
                                 <th class="p-3 text-right">SVB</th>
                                 <th class="p-3 text-right">Passport</th>
                                 <th class="p-3 text-right">BPJS</th>
                             </tr>
                         </thead>
-                        <tbody class="text-sm text-slate-600 divide-y divide-slate-100" id="submissionTableBody"></tbody>
+                        <tbody class="text-sm text-[#ded6c4] divide-y divide-[#393327]" id="submissionTableBody"></tbody>
                     </table>
                 </div>
             </div>
-            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
-                <h2 class="text-xl font-semibold mb-4 text-slate-700">Persentase Data dari Kuota</h2>
+            <div class="bg-[#1b1915] p-6 rounded-xl shadow-sm border border-[#4d422d]">
+                <h2 class="text-xl font-semibold mb-4 text-[#e3c66d]">Persentase Data dari Kuota</h2>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse">
                         <thead>
-                            <tr class="border-b-2 border-slate-200 text-sm uppercase tracking-wider text-slate-500">
+                            <tr class="border-b-2 border-[#55482b] text-sm uppercase tracking-wider text-[#b9ad8f]">
                                 <th class="p-3">Kota</th>
                                 <th class="p-3 text-right">Kuota</th>
                                 <th class="p-3 text-right">SVB (%)</th>
@@ -81,7 +119,7 @@
                                 <th class="p-3 text-right">BPJS (%)</th>
                             </tr>
                         </thead>
-                        <tbody class="text-sm text-slate-600 divide-y divide-slate-100" id="percentageTableBody"></tbody>
+                        <tbody class="text-sm text-[#ded6c4] divide-y divide-[#393327]" id="percentageTableBody"></tbody>
                     </table>
                 </div>
             </div>
